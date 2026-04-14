@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulador Álbum Mundial</title>
+<style>
+    body {
+        font-family: Arial;
+        background: #f4f4f4;
+        text-align: center;
+        padding: 20px;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 500px;
+        margin: auto;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+        padding: 10px;
+        margin: 10px;
+        width: 80%;
+    }
+    button {
+        background: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #218838;
+    }
+    .resultado {
+        margin-top: 20px;
+        font-size: 18px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Simulador Álbum Mundial ⚽</h2>
+
+    <label>% del álbum que completarás comprando:</label><br>
+    <input type="number" id="porcentaje" value="90" min="1" max="100">
+
+    <label>Simulaciones:</label><br>
+    <input type="number" id="simulaciones" value="5000">
+
+    <button onclick="simular()">Simular</button>
+
+    <div class="resultado" id="resultado"></div>
+</div>
+
+<script>
+const N = 980;       // estampas totales
+const K = 7;         // estampas por sobre
+const PRECIO = 25;   // pesos por sobre
+
+function simularAlbum(porcentajeObjetivo) {
+    let objetivo = Math.floor(N * (porcentajeObjetivo / 100));
+    let album = new Set();
+    let sobres = 0;
+
+    while (album.size < objetivo) {
+        for (let i = 0; i < K; i++) {
+            let estampa = Math.floor(Math.random() * N) + 1;
+            album.add(estampa);
+        }
+        sobres++;
+    }
+
+    return sobres;
+}
+
+function monteCarlo(porcentaje, sims) {
+    let resultados = [];
+
+    for (let i = 0; i < sims; i++) {
+        resultados.push(simularAlbum(porcentaje));
+    }
+
+    let promedio = resultados.reduce((a, b) => a + b, 0) / sims;
+    let min = Math.min(...resultados);
+    let max = Math.max(...resultados);
+
+    return { promedio, min, max };
+}
+
+function simular() {
+    let porcentaje = parseFloat(document.getElementById("porcentaje").value);
+    let sims = parseInt(document.getElementById("simulaciones").value);
+
+    let res = monteCarlo(porcentaje, sims);
+
+    let costo = res.promedio * PRECIO;
+
+    document.getElementById("resultado").innerHTML = `
+        <p><b>Sobres promedio:</b> ${res.promedio.toFixed(2)}</p>
+        <p><b>Sobres mínimo:</b> ${res.min}</p>
+        <p><b>Sobres máximo:</b> ${res.max}</p>
+        <hr>
+        <p><b>Costo estimado:</b> $${costo.toFixed(2)} MXN</p>
+    `;
+}
+</script>
+
+</body>
+</html>
