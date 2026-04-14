@@ -2,62 +2,107 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Simulador Álbum Mundial</title>
+<title>Simulador Llenado album del Mundial 2026</title>
+
 <style>
-    body {
-        font-family: Arial;
-        background: #f4f4f4;
-        text-align: center;
-        padding: 20px;
-    }
-    .container {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        max-width: 500px;
-        margin: auto;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, button {
-        padding: 10px;
-        margin: 10px;
-        width: 80%;
-    }
-    button {
-        background: #28a745;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #218838;
-    }
-    .resultado {
-        margin-top: 20px;
-        font-size: 18px;
-    }
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0b6623, #1e90ff);
+    color: white;
+    text-align: center;
+}
+
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: rgba(0,0,0,0.6);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+img {
+    width: 120px;
+    margin-bottom: 10px;
+}
+
+input, button {
+    padding: 10px;
+    margin: 10px;
+    width: 80%;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    background: #ffcc00;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ffaa00;
+}
+
+.progress-bar {
+    width: 100%;
+    background: #ddd;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+.progress {
+    width: 0%;
+    height: 20px;
+    background: #00ff88;
+    border-radius: 10px;
+    transition: width 0.2s;
+}
+
+.resultado {
+    margin-top: 20px;
+    font-size: 18px;
+}
 </style>
+
 </head>
+
 <body>
 
 <div class="container">
-    <h2>Simulador Álbum Mundial ⚽</h2>
 
-    <label>% del álbum que completarás comprando:</label><br>
+    <!-- Puedes cambiar esta imagen por otra del mundial -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Soccer_ball.svg">
+
+    <h1>Simulador Álbum Mundial</h1>
+
+    <p>¿Cuántos sobres necesitas comprar?</p>
+
     <input type="number" id="porcentaje" value="90" min="1" max="100">
+    <label>% que completarás comprando</label><br>
 
-    <label>Simulaciones:</label><br>
-    <input type="number" id="simulaciones" value="5000">
+    <input type="number" id="simulaciones" value="3000">
+    <label>Número de simulaciones</label><br>
 
-    <button onclick="simular()">Simular</button>
+    <button onclick="iniciarSimulacion()">Simular </button>
+
+    <div class="progress-bar">
+        <div class="progress" id="barra"></div>
+    </div>
 
     <div class="resultado" id="resultado"></div>
+
 </div>
 
 <script>
-const N = 980;       // estampas totales
-const K = 7;         // estampas por sobre
-const PRECIO = 25;   // pesos por sobre
+const N = 980;
+const K = 7;
+const PRECIO = 25;
 
 function simularAlbum(porcentajeObjetivo) {
     let objetivo = Math.floor(N * (porcentajeObjetivo / 100));
@@ -75,34 +120,41 @@ function simularAlbum(porcentajeObjetivo) {
     return sobres;
 }
 
-function monteCarlo(porcentaje, sims) {
-    let resultados = [];
-
-    for (let i = 0; i < sims; i++) {
-        resultados.push(simularAlbum(porcentaje));
-    }
-
-    let promedio = resultados.reduce((a, b) => a + b, 0) / sims;
-    let min = Math.min(...resultados);
-    let max = Math.max(...resultados);
-
-    return { promedio, min, max };
-}
-
-function simular() {
+async function iniciarSimulacion() {
     let porcentaje = parseFloat(document.getElementById("porcentaje").value);
     let sims = parseInt(document.getElementById("simulaciones").value);
 
-    let res = monteCarlo(porcentaje, sims);
+    let resultados = [];
+    let barra = document.getElementById("barra");
+    let resultadoDiv = document.getElementById("resultado");
 
-    let costo = res.promedio * PRECIO;
+    resultadoDiv.innerHTML = "Simulando... ⚽";
 
-    document.getElementById("resultado").innerHTML = `
-        <p><b>Sobres promedio:</b> ${res.promedio.toFixed(2)}</p>
-        <p><b>Sobres mínimo:</b> ${res.min}</p>
-        <p><b>Sobres máximo:</b> ${res.max}</p>
+    for (let i = 0; i < sims; i++) {
+        resultados.push(simularAlbum(porcentaje));
+
+        // Actualizar barra cada cierto número de iteraciones
+        if (i % 20 === 0) {
+            let progreso = (i / sims) * 100;
+            barra.style.width = progreso + "%";
+
+            // Permite renderizar (no congelar UI)
+            await new Promise(r => setTimeout(r, 0));
+        }
+    }
+
+    barra.style.width = "100%";
+
+    let promedio = resultados.reduce((a,b)=>a+b,0) / sims;
+    let min = Math.min(...resultados);
+    let max = Math.max(...resultados);
+    let costo = promedio * PRECIO;
+
+    resultadoDiv.innerHTML = `
+        <p> Sobres promedio: <b>${promedio.toFixed(2)}</b></p>
+        <p> Mínimo: ${min} | 📈 Máximo: ${max}</p>
         <hr>
-        <p><b>Costo estimado:</b> $${costo.toFixed(2)} MXN</p>
+        <p> Costo estimado: <b>$${costo.toFixed(2)} MXN</b></p>
     `;
 }
 </script>
