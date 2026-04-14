@@ -137,6 +137,11 @@ async function simularPorcentaje() {
             Con <b>${sobresObjetivo}</b> sobres llenas aproximadamente <b>${porcentaje.toFixed(2)}%</b> del álbum
         </div>
 
+        <div style="margin-bottom:15px;">
+            Tendrás <b>${compra}</b> estampas únicas<br>
+            y tendrás que intercambiar <b>${intercambio}</b> para llenarlo
+        </div>
+
         <div style="text-align:left; margin-top:20px;">
 
             <div style="margin-bottom:10px;">
