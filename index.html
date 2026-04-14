@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Simulador Álbum Mundial</title>
+<title>Simulador Álbum Panini</title>
 
 <style>
 body {
@@ -19,29 +19,16 @@ body {
     background: rgba(0,0,0,0.65);
     padding: 25px;
     border-radius: 15px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-}
-
-h1 {
-    margin-bottom: 10px;
 }
 
 img {
-    width: 110px;
+    width: 140px;
     margin-bottom: 15px;
-}
-
-input[type="range"] {
-    width: 80%;
-}
-
-.valor {
-    font-size: 20px;
-    margin-bottom: 10px;
 }
 
 button {
     padding: 12px;
+    margin: 10px;
     width: 80%;
     border-radius: 8px;
     border: none;
@@ -50,8 +37,9 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    background: #ffaa00;
+input[type="range"], input[type="number"] {
+    width: 80%;
+    margin: 10px;
 }
 
 .progress-bar {
@@ -66,13 +54,11 @@ button:hover {
     height: 20px;
     background: #00ff88;
     border-radius: 10px;
-    transition: width 0.2s;
 }
 
 .resultado {
-    margin-top: 25px;
-    font-size: 18px;
-    line-height: 1.5;
+    margin-top: 20px;
+    line-height: 1.6;
 }
 </style>
 
@@ -82,25 +68,33 @@ button:hover {
 
 <div class="container">
 
-    <img src="https://tiendapanini.com.mx/media/logo/stores/5/panini-logo_2_2_1.png">
+<img src="https://tiendapanini.com.mx/media/logo/stores/5/panini-logo_2_2_1.png">
 
-    <h1>Simulador costos de llenado Álbum Mundial Panini 2026</h1>
+<h2>Simulador Álbum Panini</h2>
 
-    <p>Porcentaje del álbum que completarás comprando</p>
+<div id="menu">
+    <button onclick="mostrarModo('costo')">Calcular costo para completar álbum</button>
+    <button onclick="mostrarModo('porcentaje')">Calcular avance con sobres</button>
+</div>
 
-    <div class="valor" id="valorPorcentaje">90%</div>
-
+<div id="modoCosto" style="display:none;">
+    <p>Porcentaje que completarás comprando</p>
+    <div id="valorPorcentaje">90%</div>
     <input type="range" id="porcentaje" min="10" max="100" value="90" oninput="actualizarValor()">
+    <button onclick="simularCosto()">Calcular</button>
+</div>
 
-    <br><br>
+<div id="modoPorcentaje" style="display:none;">
+    <p>¿Cuántos sobres comprarás?</p>
+    <input type="number" id="sobresInput" value="200">
+    <button onclick="simularPorcentaje()">Calcular</button>
+</div>
 
-    <button onclick="iniciarSimulacion()">Calcular</button>
+<div class="progress-bar">
+    <div class="progress" id="barra"></div>
+</div>
 
-    <div class="progress-bar">
-        <div class="progress" id="barra"></div>
-    </div>
-
-    <div class="resultado" id="resultado"></div>
+<div class="resultado" id="resultado"></div>
 
 </div>
 
@@ -111,59 +105,97 @@ const PRECIO = 25;
 const SIMS = 10000;
 const MIN_SOBRES = 140;
 
+function mostrarModo(modo) {
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("modoCosto").style.display = modo === 'costo' ? "block" : "none";
+    document.getElementById("modoPorcentaje").style.display = modo === 'porcentaje' ? "block" : "none";
+    document.getElementById("resultado").innerHTML = "";
+}
+
 function actualizarValor() {
     let val = document.getElementById("porcentaje").value;
     document.getElementById("valorPorcentaje").innerText = val + "%";
 }
 
-function simularAlbum(porcentajeObjetivo) {
-    let objetivo = Math.floor(N * (porcentajeObjetivo / 100));
-    let album = new Set();
-    let sobres = 0;
-
-    while (album.size < objetivo) {
-        for (let i = 0; i < K; i++) {
-            let estampa = Math.floor(Math.random() * N) + 1;
-            album.add(estampa);
-        }
-        sobres++;
+function abrirSobre(album) {
+    for (let i = 0; i < K; i++) {
+        let estampa = Math.floor(Math.random() * N) + 1;
+        album.add(estampa);
     }
-
-    return sobres;
 }
 
-async function iniciarSimulacion() {
+// -------- MODO COSTO --------
+async function simularCosto() {
     let porcentaje = parseFloat(document.getElementById("porcentaje").value);
-
-    let resultados = [];
     let barra = document.getElementById("barra");
-    let resultadoDiv = document.getElementById("resultado");
-
-    resultadoDiv.innerHTML = "Calculando...";
+    let resultados = [];
 
     for (let i = 0; i < SIMS; i++) {
-        resultados.push(simularAlbum(porcentaje));
+        let objetivo = Math.floor(N * (porcentaje / 100));
+        let album = new Set();
+        let sobres = 0;
+
+        while (album.size < objetivo) {
+            abrirSobre(album);
+            sobres++;
+        }
+
+        resultados.push(sobres);
 
         if (i % 50 === 0) {
-            let progreso = (i / SIMS) * 100;
-            barra.style.width = progreso + "%";
+            barra.style.width = (i / SIMS) * 100 + "%";
             await new Promise(r => setTimeout(r, 0));
         }
     }
 
     barra.style.width = "100%";
 
-    let promedio = resultados.reduce((a,b)=>a+b,0) / SIMS;
-
-    // Aplicar mínimo de sobres
+    let promedio = resultados.reduce((a,b)=>a+b,0)/SIMS;
     let sobresFinal = Math.max(promedio, MIN_SOBRES);
-
     let costo = sobresFinal * PRECIO;
 
-    resultadoDiv.innerHTML = `
+    let espaciosCompra = Math.floor(N * (porcentaje / 100));
+    let espaciosIntercambio = N - espaciosCompra;
+
+    document.getElementById("resultado").innerHTML = `
         Necesitas comprar al menos <b>${sobresFinal.toFixed(0)}</b> sobres<br>
         y gastarás aproximadamente <b>$${costo.toFixed(2)} MXN</b><br><br>
-        para completar tu álbum Panini del mundial.
+        Tendrás <b>${espaciosCompra}</b> espacios con sobres<br>
+        y <b>${espaciosIntercambio}</b> mediante intercambio
+    `;
+}
+
+// -------- MODO PORCENTAJE --------
+async function simularPorcentaje() {
+    let sobresObjetivo = parseInt(document.getElementById("sobresInput").value);
+    let barra = document.getElementById("barra");
+    let resultados = [];
+
+    for (let i = 0; i < SIMS; i++) {
+        let album = new Set();
+
+        for (let s = 0; s < sobresObjetivo; s++) {
+            abrirSobre(album);
+        }
+
+        resultados.push(album.size);
+
+        if (i % 50 === 0) {
+            barra.style.width = (i / SIMS) * 100 + "%";
+            await new Promise(r => setTimeout(r, 0));
+        }
+    }
+
+    barra.style.width = "100%";
+
+    let promedio = resultados.reduce((a,b)=>a+b,0)/SIMS;
+    let porcentaje = (promedio / N) * 100;
+    let intercambio = N - promedio;
+
+    document.getElementById("resultado").innerHTML = `
+        Con <b>${sobresObjetivo}</b> sobres llenarás aproximadamente <b>${porcentaje.toFixed(2)}%</b> del álbum<br><br>
+        Tendrás <b>${promedio.toFixed(0)}</b> estampas únicas<br>
+        y necesitarás intercambiar aproximadamente <b>${intercambio.toFixed(0)}</b>
     `;
 }
 </script>
