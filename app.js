@@ -61,7 +61,7 @@ async function simularCosto() {
         }
     }
 
-    let promedio = resultados.reduce((a,b)=>a+b,0)/SIMS;
+    let promedio = resultados.reduce((a, b) => a + b, 0) / SIMS;
     let sobresFinal = Math.max(promedio, MIN_SOBRES);
     let costo = sobresFinal * PRECIO;
 
@@ -69,9 +69,37 @@ async function simularCosto() {
     let intercambio = N - compra;
 
     document.getElementById("resultado").innerHTML = `
-        Necesitas <b>${sobresFinal.toFixed(0)}</b> sobres<br>
-        Costo estimado: <b>$${costo.toFixed(0)} MXN</b><br><br>
-        Compra: <b>${compra}</b> | Intercambio: <b>${intercambio}</b>
+        <div style="font-size:18px; margin-bottom:10px;">
+            Necesitas comprar al menos <b>${sobresFinal.toFixed(0)}</b> sobres
+        </div>
+
+        <div style="margin-bottom:15px;">
+            Costo estimado: <b>$${costo.toFixed(2)} MXN</b>
+        </div>
+
+        <div style="text-align:left; margin-top:20px;">
+
+            <div style="margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Compra</span>
+                    <span>${compra} espacios</span>
+                </div>
+                <div style="background:#444; border-radius:10px; overflow:hidden;">
+                    <div style="width:${(compra / N) * 100}%; background:#ffcc00; height:10px;"></div>
+                </div>
+            </div>
+
+            <div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Intercambio</span>
+                    <span>${intercambio} espacios</span>
+                </div>
+                <div style="background:#444; border-radius:10px; overflow:hidden;">
+                    <div style="width:${(intercambio / N) * 100}%; background:#1e90ff; height:10px;"></div>
+                </div>
+            </div>
+
+        </div>
     `;
 }
 
@@ -98,10 +126,39 @@ async function simularPorcentaje() {
         }
     }
 
-    let promedio = resultados.reduce((a,b)=>a+b,0)/SIMS;
+    let promedio = resultados.reduce((a, b) => a + b, 0) / SIMS;
     let porcentaje = (promedio / N) * 100;
 
+    let compra = Math.round(promedio);
+    let intercambio = N - compra;
+
     document.getElementById("resultado").innerHTML = `
-        Con <b>${sobresObjetivo}</b> sobres llenas aproximadamente <b>${porcentaje.toFixed(2)}%</b>
+        <div style="font-size:18px; margin-bottom:10px;">
+            Con <b>${sobresObjetivo}</b> sobres llenas aproximadamente <b>${porcentaje.toFixed(2)}%</b> del álbum
+        </div>
+
+        <div style="text-align:left; margin-top:20px;">
+
+            <div style="margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Con tus sobres</span>
+                    <span>${compra} espacios</span>
+                </div>
+                <div style="background:#444; border-radius:10px; overflow:hidden;">
+                    <div style="width:${(compra / N) * 100}%; background:#ffcc00; height:10px;"></div>
+                </div>
+            </div>
+
+            <div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Intercambio</span>
+                    <span>${intercambio} espacios</span>
+                </div>
+                <div style="background:#444; border-radius:10px; overflow:hidden;">
+                    <div style="width:${(intercambio / N) * 100}%; background:#1e90ff; height:10px;"></div>
+                </div>
+            </div>
+
+        </div>
     `;
 }
