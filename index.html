@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Simulador Llenado album del Mundial 2026</title>
+<title>Simulador Álbum Mundial</title>
 
 <style>
 body {
@@ -16,7 +16,7 @@ body {
 .container {
     max-width: 600px;
     margin: 40px auto;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.65);
     padding: 25px;
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
@@ -27,19 +27,24 @@ h1 {
 }
 
 img {
-    width: 120px;
+    width: 110px;
+    margin-bottom: 15px;
+}
+
+input[type="range"] {
+    width: 80%;
+}
+
+.valor {
+    font-size: 20px;
     margin-bottom: 10px;
 }
 
-input, button {
-    padding: 10px;
-    margin: 10px;
+button {
+    padding: 12px;
     width: 80%;
     border-radius: 8px;
     border: none;
-}
-
-button {
     background: #ffcc00;
     font-weight: bold;
     cursor: pointer;
@@ -53,7 +58,7 @@ button:hover {
     width: 100%;
     background: #ddd;
     border-radius: 10px;
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
 .progress {
@@ -65,8 +70,9 @@ button:hover {
 }
 
 .resultado {
-    margin-top: 20px;
+    margin-top: 25px;
     font-size: 18px;
+    line-height: 1.5;
 }
 </style>
 
@@ -76,20 +82,19 @@ button:hover {
 
 <div class="container">
 
-    <!-- Puedes cambiar esta imagen por otra del mundial -->
     <img src="https://tiendapanini.com.mx/media/logo/stores/5/panini-logo_2_2_1.png">
 
-    <h1>Simulador Álbum Mundial</h1>
+    <h1>Simulador costos de llenado Álbum Mundial Panini 2026</h1>
 
-    <p>¿Cuántos sobres necesitas comprar?</p>
+    <p>Porcentaje del álbum que completarás comprando</p>
 
-    <input type="number" id="porcentaje" value="90" min="1" max="100">
-    <label>% que completarás comprando</label><br>
+    <div class="valor" id="valorPorcentaje">90%</div>
 
-    <input type="number" id="simulaciones" value="3000">
-    <label>Número de simulaciones</label><br>
+    <input type="range" id="porcentaje" min="10" max="100" value="90" oninput="actualizarValor()">
 
-    <button onclick="iniciarSimulacion()">Simular </button>
+    <br><br>
+
+    <button onclick="iniciarSimulacion()">Calcular</button>
 
     <div class="progress-bar">
         <div class="progress" id="barra"></div>
@@ -103,6 +108,13 @@ button:hover {
 const N = 980;
 const K = 7;
 const PRECIO = 25;
+const SIMS = 10000;
+const MIN_SOBRES = 140;
+
+function actualizarValor() {
+    let val = document.getElementById("porcentaje").value;
+    document.getElementById("valorPorcentaje").innerText = val + "%";
+}
 
 function simularAlbum(porcentajeObjetivo) {
     let objetivo = Math.floor(N * (porcentajeObjetivo / 100));
@@ -122,39 +134,36 @@ function simularAlbum(porcentajeObjetivo) {
 
 async function iniciarSimulacion() {
     let porcentaje = parseFloat(document.getElementById("porcentaje").value);
-    let sims = parseInt(document.getElementById("simulaciones").value);
 
     let resultados = [];
     let barra = document.getElementById("barra");
     let resultadoDiv = document.getElementById("resultado");
 
-    resultadoDiv.innerHTML = "Simulando... ";
+    resultadoDiv.innerHTML = "Calculando...";
 
-    for (let i = 0; i < sims; i++) {
+    for (let i = 0; i < SIMS; i++) {
         resultados.push(simularAlbum(porcentaje));
 
-        // Actualizar barra cada cierto número de iteraciones
-        if (i % 20 === 0) {
-            let progreso = (i / sims) * 100;
+        if (i % 50 === 0) {
+            let progreso = (i / SIMS) * 100;
             barra.style.width = progreso + "%";
-
-            // Permite renderizar (no congelar UI)
             await new Promise(r => setTimeout(r, 0));
         }
     }
 
     barra.style.width = "100%";
 
-    let promedio = resultados.reduce((a,b)=>a+b,0) / sims;
-    let min = Math.min(...resultados);
-    let max = Math.max(...resultados);
-    let costo = promedio * PRECIO;
+    let promedio = resultados.reduce((a,b)=>a+b,0) / SIMS;
+
+    // Aplicar mínimo de sobres
+    let sobresFinal = Math.max(promedio, MIN_SOBRES);
+
+    let costo = sobresFinal * PRECIO;
 
     resultadoDiv.innerHTML = `
-        <p> Sobres promedio: <b>${promedio.toFixed(2)}</b></p>
-        <p> Mínimo: ${min} |  Máximo: ${max}</p>
-        <hr>
-        <p> Costo estimado: <b>$${costo.toFixed(2)} MXN</b></p>
+        Necesitas comprar al menos <b>${sobresFinal.toFixed(0)}</b> sobres<br>
+        y gastarás aproximadamente <b>$${costo.toFixed(2)} MXN</b><br><br>
+        para completar tu álbum Panini del mundial.
     `;
 }
 </script>
