@@ -37,9 +37,35 @@ button {
     cursor: pointer;
 }
 
-input[type="range"], input[type="number"] {
+button:hover {
+    background: #ffaa00;
+}
+
+.secondary {
+    background: #cccccc;
+    color: black;
+}
+
+input[type="range"] {
     width: 80%;
     margin: 10px;
+}
+
+.input-card {
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 12px;
+    margin: 15px auto;
+    width: 70%;
+}
+
+.input-card input {
+    width: 100%;
+    padding: 12px;
+    font-size: 20px;
+    text-align: center;
+    border-radius: 8px;
+    border: none;
 }
 
 .progress-bar {
@@ -60,6 +86,16 @@ input[type="range"], input[type="number"] {
     margin-top: 20px;
     line-height: 1.6;
 }
+
+.disclaimer {
+    margin-top: 30px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.4;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
 </style>
 
 </head>
@@ -77,17 +113,26 @@ input[type="range"], input[type="number"] {
     <button onclick="mostrarModo('porcentaje')">Calcular avance con sobres</button>
 </div>
 
+<!-- MODO COSTO -->
 <div id="modoCosto" style="display:none;">
     <p>Porcentaje que completarás comprando</p>
     <div id="valorPorcentaje">90%</div>
     <input type="range" id="porcentaje" min="10" max="100" value="90" oninput="actualizarValor()">
+
     <button onclick="simularCosto()">Calcular</button>
+    <button class="secondary" onclick="volverMenu()">Regresar al menú</button>
 </div>
 
+<!-- MODO PORCENTAJE -->
 <div id="modoPorcentaje" style="display:none;">
     <p>¿Cuántos sobres comprarás?</p>
-    <input type="number" id="sobresInput" value="200">
+
+    <div class="input-card">
+        <input type="number" id="sobresInput" value="200">
+    </div>
+
     <button onclick="simularPorcentaje()">Calcular</button>
+    <button class="secondary" onclick="volverMenu()">Regresar al menú</button>
 </div>
 
 <div class="progress-bar">
@@ -96,6 +141,14 @@ input[type="range"], input[type="number"] {
 
 <div class="resultado" id="resultado"></div>
 
+</div>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+    Este simulador es una herramienta independiente creada con fines informativos y de entretenimiento.
+    No es un sitio oficial ni está afiliado, patrocinado o respaldado por Panini.
+    Todas las marcas y nombres mencionados pertenecen a sus respectivos propietarios.
+    Los resultados son estimaciones basadas en simulaciones probabilísticas.
 </div>
 
 <script>
@@ -110,6 +163,15 @@ function mostrarModo(modo) {
     document.getElementById("modoCosto").style.display = modo === 'costo' ? "block" : "none";
     document.getElementById("modoPorcentaje").style.display = modo === 'porcentaje' ? "block" : "none";
     document.getElementById("resultado").innerHTML = "";
+    document.getElementById("barra").style.width = "0%";
+}
+
+function volverMenu() {
+    document.getElementById("menu").style.display = "block";
+    document.getElementById("modoCosto").style.display = "none";
+    document.getElementById("modoPorcentaje").style.display = "none";
+    document.getElementById("resultado").innerHTML = "";
+    document.getElementById("barra").style.width = "0%";
 }
 
 function actualizarValor() {
@@ -124,7 +186,7 @@ function abrirSobre(album) {
     }
 }
 
-// -------- MODO COSTO --------
+// MODO COSTO
 async function simularCosto() {
     let porcentaje = parseFloat(document.getElementById("porcentaje").value);
     let barra = document.getElementById("barra");
@@ -165,7 +227,7 @@ async function simularCosto() {
     `;
 }
 
-// -------- MODO PORCENTAJE --------
+// MODO PORCENTAJE
 async function simularPorcentaje() {
     let sobresObjetivo = parseInt(document.getElementById("sobresInput").value);
     let barra = document.getElementById("barra");
