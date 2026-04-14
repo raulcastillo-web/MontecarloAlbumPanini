@@ -2,265 +2,63 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Simulador Álbum Panini</title>
 
-<style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0b6623, #1e90ff);
-    color: white;
-    text-align: center;
-}
-
-.container {
-    max-width: 600px;
-    margin: 40px auto;
-    background: rgba(0,0,0,0.65);
-    padding: 25px;
-    border-radius: 15px;
-}
-
-img {
-    width: 140px;
-    margin-bottom: 15px;
-}
-
-button {
-    padding: 12px;
-    margin: 10px;
-    width: 80%;
-    border-radius: 8px;
-    border: none;
-    background: #ffcc00;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #ffaa00;
-}
-
-.secondary {
-    background: #cccccc;
-    color: black;
-}
-
-input[type="range"] {
-    width: 80%;
-    margin: 10px;
-}
-
-.input-card {
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 12px;
-    margin: 15px auto;
-    width: 70%;
-}
-
-.input-card input {
-    width: 100%;
-    padding: 12px;
-    font-size: 20px;
-    text-align: center;
-    border-radius: 8px;
-    border: none;
-}
-
-.progress-bar {
-    width: 100%;
-    background: #ddd;
-    border-radius: 10px;
-    margin-top: 20px;
-}
-
-.progress {
-    width: 0%;
-    height: 20px;
-    background: #00ff88;
-    border-radius: 10px;
-}
-
-.resultado {
-    margin-top: 20px;
-    line-height: 1.6;
-}
-
-.disclaimer {
-    margin-top: 30px;
-    font-size: 12px;
-    color: rgba(255,255,255,0.7);
-    line-height: 1.4;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-</style>
-
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
 <div class="container">
 
-<img src="https://tiendapanini.com.mx/media/logo/stores/5/panini-logo_2_2_1.png">
+    <img src="https://tiendapanini.com.mx/media/logo/stores/5/panini-logo_2_2_1.png">
 
-<h2>Simulador Álbum Panini</h2>
+    <h2>Simulador Álbum Panini</h2>
 
-<div id="menu">
-    <button onclick="mostrarModo('costo')">Calcular costo para completar álbum</button>
-    <button onclick="mostrarModo('porcentaje')">Calcular avance con sobres</button>
-</div>
-
-<!-- MODO COSTO -->
-<div id="modoCosto" style="display:none;">
-    <p>Porcentaje que completarás comprando</p>
-    <div id="valorPorcentaje">90%</div>
-    <input type="range" id="porcentaje" min="10" max="100" value="90" oninput="actualizarValor()">
-
-    <button onclick="simularCosto()">Calcular</button>
-    <button class="secondary" onclick="volverMenu()">Regresar al menú</button>
-</div>
-
-<!-- MODO PORCENTAJE -->
-<div id="modoPorcentaje" style="display:none;">
-    <p>¿Cuántos sobres comprarás?</p>
-
-    <div class="input-card">
-        <input type="number" id="sobresInput" value="200">
+    <!-- MENÚ -->
+    <div id="menu">
+        <button onclick="mostrarModo('costo')">Calcular costo</button>
+        <button onclick="mostrarModo('porcentaje')">Calcular avance</button>
     </div>
 
-    <button onclick="simularPorcentaje()">Calcular</button>
-    <button class="secondary" onclick="volverMenu()">Regresar al menú</button>
+    <!-- MODO COSTO -->
+    <div id="modoCosto" class="hidden">
+        <p>Porcentaje que completarás comprando</p>
+
+        <div id="valorPorcentaje">90%</div>
+        <input type="range" id="porcentaje" min="10" max="100" value="90" oninput="actualizarValor()">
+
+        <button onclick="simularCosto()">Calcular</button>
+        <button class="secondary" onclick="volverMenu()">Regresar</button>
+    </div>
+
+    <!-- MODO PORCENTAJE -->
+    <div id="modoPorcentaje" class="hidden">
+        <p>¿Cuántos sobres comprarás?</p>
+
+        <div class="input-card">
+            <input type="number" id="sobresInput" value="200">
+        </div>
+
+        <button onclick="simularPorcentaje()">Calcular</button>
+        <button class="secondary" onclick="volverMenu()">Regresar</button>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress" id="barra"></div>
+    </div>
+
+    <div class="resultado" id="resultado"></div>
+
 </div>
 
-<div class="progress-bar">
-    <div class="progress" id="barra"></div>
-</div>
-
-<div class="resultado" id="resultado"></div>
-
-</div>
-
-<!-- DISCLAIMER -->
 <div class="disclaimer">
-    Este simulador es una herramienta independiente creada con fines informativos y de entretenimiento.
-    No es un sitio oficial ni está afiliado, patrocinado o respaldado por Panini.
-    Todas las marcas y nombres mencionados pertenecen a sus respectivos propietarios.
-    Los resultados son estimaciones basadas en simulaciones probabilísticas.
+Este simulador no es oficial y no está afiliado a Panini.
 </div>
 
-<script>
-const N = 980;
-const K = 7;
-const PRECIO = 25;
-const SIMS = 10000;
-const MIN_SOBRES = 140;
-
-function mostrarModo(modo) {
-    document.getElementById("menu").style.display = "none";
-    document.getElementById("modoCosto").style.display = modo === 'costo' ? "block" : "none";
-    document.getElementById("modoPorcentaje").style.display = modo === 'porcentaje' ? "block" : "none";
-    document.getElementById("resultado").innerHTML = "";
-    document.getElementById("barra").style.width = "0%";
-}
-
-function volverMenu() {
-    document.getElementById("menu").style.display = "block";
-    document.getElementById("modoCosto").style.display = "none";
-    document.getElementById("modoPorcentaje").style.display = "none";
-    document.getElementById("resultado").innerHTML = "";
-    document.getElementById("barra").style.width = "0%";
-}
-
-function actualizarValor() {
-    let val = document.getElementById("porcentaje").value;
-    document.getElementById("valorPorcentaje").innerText = val + "%";
-}
-
-function abrirSobre(album) {
-    for (let i = 0; i < K; i++) {
-        let estampa = Math.floor(Math.random() * N) + 1;
-        album.add(estampa);
-    }
-}
-
-// MODO COSTO
-async function simularCosto() {
-    let porcentaje = parseFloat(document.getElementById("porcentaje").value);
-    let barra = document.getElementById("barra");
-    let resultados = [];
-
-    for (let i = 0; i < SIMS; i++) {
-        let objetivo = Math.floor(N * (porcentaje / 100));
-        let album = new Set();
-        let sobres = 0;
-
-        while (album.size < objetivo) {
-            abrirSobre(album);
-            sobres++;
-        }
-
-        resultados.push(sobres);
-
-        if (i % 50 === 0) {
-            barra.style.width = (i / SIMS) * 100 + "%";
-            await new Promise(r => setTimeout(r, 0));
-        }
-    }
-
-    barra.style.width = "100%";
-
-    let promedio = resultados.reduce((a,b)=>a+b,0)/SIMS;
-    let sobresFinal = Math.max(promedio, MIN_SOBRES);
-    let costo = sobresFinal * PRECIO;
-
-    let espaciosCompra = Math.floor(N * (porcentaje / 100));
-    let espaciosIntercambio = N - espaciosCompra;
-
-    document.getElementById("resultado").innerHTML = `
-        Necesitas comprar al menos <b>${sobresFinal.toFixed(0)}</b> sobres<br>
-        y gastarás aproximadamente <b>$${costo.toFixed(2)} MXN</b><br><br>
-        Tendrás <b>${espaciosCompra}</b> espacios con sobres<br>
-        y <b>${espaciosIntercambio}</b> mediante intercambio
-    `;
-}
-
-// MODO PORCENTAJE
-async function simularPorcentaje() {
-    let sobresObjetivo = parseInt(document.getElementById("sobresInput").value);
-    let barra = document.getElementById("barra");
-    let resultados = [];
-
-    for (let i = 0; i < SIMS; i++) {
-        let album = new Set();
-
-        for (let s = 0; s < sobresObjetivo; s++) {
-            abrirSobre(album);
-        }
-
-        resultados.push(album.size);
-
-        if (i % 50 === 0) {
-            barra.style.width = (i / SIMS) * 100 + "%";
-            await new Promise(r => setTimeout(r, 0));
-        }
-    }
-
-    barra.style.width = "100%";
-
-    let promedio = resultados.reduce((a,b)=>a+b,0)/SIMS;
-    let porcentaje = (promedio / N) * 100;
-    let intercambio = N - promedio;
-
-    document.getElementById("resultado").innerHTML = `
-        Con <b>${sobresObjetivo}</b> sobres llenarás aproximadamente <b>${porcentaje.toFixed(2)}%</b> del álbum<br><br>
-        Tendrás <b>${promedio.toFixed(0)}</b> estampas únicas<br>
-        y necesitarás intercambiar aproximadamente <b>${intercambio.toFixed(0)}</b>
-    `;
-}
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
